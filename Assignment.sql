@@ -114,7 +114,7 @@ WHERE salary = (
 SELECT *
  FROM employees
  ORDER BY salary DESC
- LIMIT 2, 2;
+ LIMIT 1, 2;
 
 ## 5. Write a query to select employees and their corresponding managers and their salaries
 
@@ -133,17 +133,21 @@ ON e.manager_id = m.employee_id;
 
 ## 6. Write a query to show count of employees under each manager in descending order
 
-SELECT manager_id, COUNT(*) AS employee_count
-FROM employees
-GROUP BY manager_id
-ORDER BY employee_count DESC;
+SELECT m.first_name, COUNT(m.first_name) AS emp_count
+FROM employees m
+JOIN employees e
+ON m.employee_id = e.manager_id
+GROUP BY m.employee_id
+ORDER BY emp_count DESC;
 
 ## 7. Find the count of employees in each department
 
-SELECT department_id, COUNT(*) AS employee_count
-FROM employees
-GROUP BY department_id
-ORDER BY employee_count DESC;
+SELECT emp.department_id, d.department_name, COUNT(emp.department_id) AS num_of_employee
+FROM employees emp
+JOIN departments d
+USING (department_id)
+GROUP BY d.department_id
+ORDER BY num_of_employee DESC;
 
 ## 8. Get the count of employees hired year wise
 
@@ -180,7 +184,7 @@ WHERE first_name LIKE '%an%';
 
 ## 12. Select employee first name and the corresponding phone number in the format (_ _ _)-(_ _ _)-(_ _ _ _)
 
-SELECT first_name, CONCAT('(', SUBSTRING(phone_number, 1, 3), ')-', SUBSTRING(phone_number, 4, 3), '-', SUBSTRING(phone_number, 7, 4)) AS formatted_phone
+SELECT first_name,  REPLACE(phone_number, '.','-') AS phone_number
 FROM employees;
 
 ## 13. Find the employees who joined in August, 1994.
@@ -198,13 +202,15 @@ SELECT employee_id, first_name, Salary
 
 ## 15. Find the maximum salary from each department.
 
-SELECT department_id, MAX(salary) AS max_salary
-FROM employees
-GROUP BY department_id;
+SELECT d.department_id, MAX(e.salary) AS max_salary
+FROM departments d
+JOIN employees e
+ON d.deparment_id = e.department_id
+GROUP BY d.department_id;
 
 ## 16. Write a SQL query to display the 5 least earning employees
 
-SELECT employee_id, salary
+SELECT  first_name, last_name, salary
 FROM employees
 ORDER BY salary ASC
 LIMIT 5;
@@ -223,12 +229,9 @@ WHERE  YEAR (hire_date) BETWEEN 1980 AND 1989;
 
 ## 18. Display the employees first name and the name in reverse order
 
-SELECT first_name, CONCAT(REVERSE(first_name), ' ', REVERSE(last_name)) AS reverse_name
+SELECT first_name, REVERSE(first_name) AS reverse_name
 FROM employees;
 
-           -- ALTERNATIVELY
-SELECT first_name, CONCAT(REVERSE(first_name)) AS reverse_name
-FROM employees;
 
 ## 19. Find the employees who joined the company after 15th of the month
 
@@ -244,11 +247,15 @@ JOIN employees E ON M.employee_id = E.manager_id
 WHERE M.department_id <> E.department_id;
 
       --    Alternatively
-SELECT m.employee_id AS reporting_manager, e.employee_id AS reporting_employee, e.first_name AS reporting_name
+SELECT d.department_name AS reporting_emp_dept,
+m.department_id AS mgr_dept
 FROM employees m
-JOIN employees e
-ON m.employee_id = e.manager_id
-WHERE m.department_id != e.employee_id;      
+JOIN employees e 
+ON e.manager_id = m.employee_id
+JOIN departments d
+ON e.department_id = d.department_id
+WHERE m.department_id != e.department_id
+ORDER BY manager_name;   
 
 ## 1. Select employees first name, last name, job_id and salary whose first name starts with alphabet S
 ## 2. Write a query to select employee with the highest salary
